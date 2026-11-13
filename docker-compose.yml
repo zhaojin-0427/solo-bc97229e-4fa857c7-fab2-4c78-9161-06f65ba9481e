@@ -1,0 +1,24 @@
+services:
+  web:
+    build: ./app
+    image: telemetry-merge-demo
+    ports:
+      - "8000:8000"
+    environment:
+      DATA_DIR: /data
+      BATCH_ROWS: "20000"
+      # 演示钩子（毫秒/批）：放慢合并与下载，便于观察进度、
+      # 慢下载不阻塞合并、以及 kill 容器后的崩溃恢复。
+      # MERGE_BATCH_DELAY_MS: "100"
+      # DOWNLOAD_BATCH_DELAY_MS: "100"
+    volumes:
+      - telemetry-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  telemetry-data:
